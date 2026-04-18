@@ -1,21 +1,25 @@
 import fs from "fs";
 import path from "path";
 
-let cached: string | null = null;
+type Mode = "direct" | "friendly";
 
-export function getSystemPrompt(context: string): string {
-  // In production, Next.js bundles don't always have fs — read once and cache.
-  if (!cached) {
-    const promptPath = path.join(process.cwd(), "prompts", "system.md");
-    cached = fs.readFileSync(promptPath, "utf-8");
+const cache: Record<Mode, string | null> = { direct: null, friendly: null };
+
+function loadPrompt(mode: Mode): string {
+  if (!cache[mode]) {
+    const file = mode === "friendly" ? "system-friendly.md" : "system.md";
+    cache[mode] = fs.readFileSync(path.join(process.cwd(), "prompts", file), "utf-8");
   }
-  return cached.replace("{{CONTEXT}}", context);
+  return cache[mode]!;
 }
 
-export function getGhostSystemPrompt(context: string): string {
-  const base = getSystemPrompt(context);
+export function getSystemPrompt(context: string, mode: Mode = "direct"): string {
+  return loadPrompt(mode).replace("{{CONTEXT}}", context);
+}
+
+export function getGhostSystemPrompt(context: string, mode: Mode = "direct"): string {
   return (
-    base +
+    getSystemPrompt(context, mode) +
     "\n\nIMPORTANT: You are responding in ghost comment mode. Reply with ONLY the comment text — no leading // or #, no explanation, no preamble. One line, under 80 chars."
   );
 }

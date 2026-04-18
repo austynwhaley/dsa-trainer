@@ -37,6 +37,7 @@ export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   timestamp: number;
+  hidden?: boolean; // internal trigger messages — not shown in UI
 }
 
 export interface EditEvent {
@@ -49,6 +50,12 @@ export interface GhostComment {
   line: number;
   text: string;
   id: string;
+}
+
+export interface PendingEdit {
+  originalCode: string; // code before AI started writing
+  finalCode: string;    // code AI intends to produce
+  isAnimating: boolean; // still typing?
 }
 
 export interface AIContext {

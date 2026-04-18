@@ -8,6 +8,7 @@ import type {
   EditEvent,
   GhostComment,
   RunResult,
+  PendingEdit,
 } from "./types";
 import { PROBLEMS } from "./problems";
 
@@ -38,12 +39,32 @@ interface AppState {
   chatMessages: ChatMessage[];
   addChatMessage: (m: ChatMessage) => void;
   updateLastAssistantMessage: (text: string) => void;
+  clearChat: () => void;
 
   // Run results
   lastRunResult: RunResult | null;
   setRunResult: (r: RunResult | null) => void;
   isRunning: boolean;
   setIsRunning: (v: boolean) => void;
+
+  // Activity tracking for check-in timer
+  lastActivityAt: number;
+  touchActivity: () => void;
+
+  // AI personality mode
+  aiMode: "direct" | "friendly";
+  setAiMode: (m: "direct" | "friendly") => void;
+
+  // Pending editor edit — AI wrote something, waiting for accept/reject
+  pendingEdit: PendingEdit | null;
+  startPendingEdit: (original: string, final: string) => void;
+  finishPendingAnimation: () => void;
+  acceptPendingEdit: () => void;
+  rejectPendingEdit: () => void;
+
+  // Offer-to-write button shown in chat after an explanation
+  pendingOffer: { label: string } | null;
+  setPendingOffer: (o: { label: string } | null) => void;
 }
 
 export const useStore = create<AppState>((set) => ({
@@ -55,6 +76,7 @@ export const useStore = create<AppState>((set) => ({
       editHistory: [],
       ghostComments: [],
       lastRunResult: null,
+      lastActivityAt: Date.now(),
     })),
 
   language: "javascript",
@@ -64,6 +86,7 @@ export const useStore = create<AppState>((set) => ({
       code: s.problem.starterCode[l],
       editHistory: [],
       ghostComments: [],
+      lastActivityAt: Date.now(),
     })),
 
   code: PROBLEMS[0].starterCode.javascript,
@@ -76,13 +99,13 @@ export const useStore = create<AppState>((set) => ({
   addEditEvent: (e) =>
     set((s) => ({
       editHistory: [...s.editHistory.slice(-50), e],
+      lastActivityAt: Date.now(),
     })),
 
   ghostComments: [],
   setGhostComment: (g) =>
     set((s) => {
       if (!g) return { ghostComments: [] };
-      // Replace any existing comment on same line
       const filtered = s.ghostComments.filter((c) => c.line !== g.line);
       return { ghostComments: [...filtered, g] };
     }),
@@ -91,19 +114,58 @@ export const useStore = create<AppState>((set) => ({
   clearGhostComments: () => set({ ghostComments: [] }),
 
   chatMessages: [],
-  addChatMessage: (m) => set((s) => ({ chatMessages: [...s.chatMessages, m] })),
+  addChatMessage: (m) =>
+    set((s) => ({
+      chatMessages: [...s.chatMessages, m],
+      // Only count non-hidden messages as activity
+      lastActivityAt: m.hidden ? s.lastActivityAt : Date.now(),
+    })),
   updateLastAssistantMessage: (text) =>
     set((s) => {
       const msgs = [...s.chatMessages];
-      const last = msgs[msgs.length - 1];
-      if (last && last.role === "assistant") {
-        msgs[msgs.length - 1] = { ...last, content: text };
+      // Find the last assistant message (may not be array tail if hidden messages follow)
+      for (let i = msgs.length - 1; i >= 0; i--) {
+        if (msgs[i].role === "assistant" && !msgs[i].hidden) {
+          msgs[i] = { ...msgs[i], content: text };
+          break;
+        }
       }
       return { chatMessages: msgs };
     }),
+  clearChat: () => set({ chatMessages: [] }),
 
   lastRunResult: null,
-  setRunResult: (r) => set({ lastRunResult: r }),
+  setRunResult: (r) =>
+    set({ lastRunResult: r, lastActivityAt: r ? Date.now() : Date.now() }),
   isRunning: false,
   setIsRunning: (v) => set({ isRunning: v }),
+
+  lastActivityAt: Date.now(),
+  touchActivity: () => set({ lastActivityAt: Date.now() }),
+
+  aiMode: "friendly",
+  setAiMode: (m) => set({ aiMode: m }),
+
+  pendingEdit: null,
+  startPendingEdit: (original, final) =>
+    set({ pendingEdit: { originalCode: original, finalCode: final, isAnimating: true } }),
+  finishPendingAnimation: () =>
+    set((s) =>
+      s.pendingEdit ? { pendingEdit: { ...s.pendingEdit, isAnimating: false } } : {}
+    ),
+  acceptPendingEdit: () =>
+    set((s) => ({
+      pendingEdit: null,
+      // code is already in the editor; sync the store value
+      code: s.pendingEdit?.finalCode ?? s.code,
+    })),
+  rejectPendingEdit: () =>
+    set((s) => ({
+      pendingEdit: null,
+      // store the original so CodeEditor can revert via value prop
+      code: s.pendingEdit?.originalCode ?? s.code,
+    })),
+
+  pendingOffer: null,
+  setPendingOffer: (o) => set({ pendingOffer: o }),
 }));

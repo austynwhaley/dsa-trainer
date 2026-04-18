@@ -24,11 +24,40 @@ html, body, #__next {
   background: #525252;
 }
 
-/* Ghost comment text injected via Monaco decorations */
+/* Ghost comment — faint, ephemeral, dismissed on typing */
 .ghost-comment-inline {
   color: #6b7280 !important;
   font-style: italic;
   opacity: 0.75;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Pending AI edit — green tint on changed lines */
+.pending-edit-line {
+  background: rgba(34, 197, 94, 0.08) !important;
+}
+.pending-edit-gutter {
+  border-left: 3px solid #22c55e !important;
+  margin-left: 3px;
+}
+
+/* AI live highlight — indigo tint on the line background */
+.ai-highlight-line {
+  background: rgba(99, 102, 241, 0.12) !important;
+}
+
+/* AI gutter marker — indigo left border */
+.ai-highlight-gutter {
+  border-left: 3px solid #6366f1 !important;
+  margin-left: 3px;
+}
+
+/* AI inline note — amber, slightly bolder than ghost comments */
+.ai-note-inline {
+  color: #f59e0b !important;
+  font-style: italic;
+  opacity: 0.85;
   pointer-events: none;
   user-select: none;
 }

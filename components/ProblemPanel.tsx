@@ -19,13 +19,40 @@ interface GenerateOptions {
   topic: string;
 }
 
+const TOPICS = [
+  "Arrays",
+  "Strings",
+  "Hash Maps",
+  "Two Pointers",
+  "Sliding Window",
+  "Stack",
+  "Queue",
+  "Linked Lists",
+  "Binary Search",
+  "Sorting",
+  "Recursion",
+  "Dynamic Programming",
+  "Greedy",
+  "Trees",
+  "Binary Search Trees",
+  "Graphs",
+  "BFS",
+  "DFS",
+  "Backtracking",
+  "Heaps / Priority Queues",
+  "Tries",
+  "Bit Manipulation",
+  "Math",
+  "Design",
+];
+
 export function ProblemPanel() {
   const { problem, setProblem } = useStore();
   const [tab, setTab] = useState<"description" | "select">("description");
   const [generating, setGenerating] = useState(false);
   const [genOptions, setGenOptions] = useState<GenerateOptions>({
     difficulty: "medium",
-    topic: "arrays",
+    topic: "Arrays",
   });
   const [importText, setImportText] = useState("");
   const [error, setError] = useState("");
@@ -146,12 +173,15 @@ export function ProblemPanel() {
                     <option value="medium">Medium</option>
                     <option value="hard">Hard</option>
                   </select>
-                  <input
+                  <select
                     value={genOptions.topic}
                     onChange={(e) => setGenOptions((o) => ({ ...o, topic: e.target.value }))}
-                    placeholder="topic (e.g. trees)"
                     className="bg-neutral-800 border border-neutral-700 rounded px-2 py-1 text-xs flex-1"
-                  />
+                  >
+                    {TOPICS.map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
                 </div>
                 <button
                   onClick={handleGenerate}
