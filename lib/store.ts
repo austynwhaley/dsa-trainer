@@ -143,7 +143,7 @@ export const useStore = create<AppState>((set) => ({
   lastActivityAt: Date.now(),
   touchActivity: () => set({ lastActivityAt: Date.now() }),
 
-  aiMode: "friendly",
+  aiMode: "direct",
   setAiMode: (m) => set({ aiMode: m }),
 
   pendingEdit: null,

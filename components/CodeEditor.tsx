@@ -209,7 +209,7 @@ export function CodeEditor() {
       worker.onmessage = (e) => { setRunResult(e.data); setIsRunning(false); worker.terminate(); };
       worker.onerror = (e) => { setRunResult({ results: [], stdout: "", error: e.message }); setIsRunning(false); worker.terminate(); };
       worker.postMessage({ code, testCases: problem.testCases, language });
-    } else {
+    } else if (language === "python" || language === "java") {
       try {
         const res = await fetch("/api/run-code", {
           method: "POST",
@@ -283,7 +283,7 @@ export function CodeEditor() {
     window.addEventListener("mouseup", onUp);
   }
 
-  const monacoLanguage = language === "javascript" ? "javascript" : "python";
+  const monacoLanguage = language === "javascript" ? "javascript" : language === "java" ? "java" : "python";
   const showAcceptReject = !!pendingEdit && !pendingEdit.isAnimating;
 
   return (
@@ -298,6 +298,10 @@ export function CodeEditor() {
           <button onClick={() => setLanguage("python")}
             className={`px-3 py-1 text-xs ${language === "python" ? "bg-neutral-700 text-white" : "text-neutral-400 hover:text-white"}`}>
             Python
+          </button>
+          <button onClick={() => setLanguage("java")}
+            className={`px-3 py-1 text-xs ${language === "java" ? "bg-neutral-700 text-white" : "text-neutral-400 hover:text-white"}`}>
+            Java
           </button>
         </div>
         <div className="flex-1" />

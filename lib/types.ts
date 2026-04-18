@@ -1,4 +1,4 @@
-export type Language = "javascript" | "python";
+export type Language = "javascript" | "python" | "java";
 
 export interface TestCase {
   input: string;

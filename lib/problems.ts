@@ -32,6 +32,11 @@ Output: [1,2]
 }`,
       python: `def two_sum(nums: list[int], target: int) -> list[int]:
     pass`,
+      java: `class Solution {
+    public int[] twoSum(int[] nums, int target) {
+
+    }
+}`,
     },
     testCases: [
       { input: "[2,7,11,15], 9", expectedOutput: "[0,1]", description: "Basic case" },
@@ -74,6 +79,11 @@ Output: false
 }`,
       python: `def is_valid(s: str) -> bool:
     pass`,
+      java: `class Solution {
+    public boolean isValid(String s) {
+
+    }
+}`,
     },
     testCases: [
       { input: '"()"', expectedOutput: "true", description: "Simple pair" },
@@ -109,6 +119,11 @@ Output: -1
 }`,
       python: `def search(nums: list[int], target: int) -> int:
     pass`,
+      java: `class Solution {
+    public int search(int[] nums, int target) {
+
+    }
+}`,
     },
     testCases: [
       { input: "[-1,0,3,5,9,12], 9", expectedOutput: "4", description: "Found in middle" },
@@ -151,6 +166,17 @@ class ListNode { constructor(val, next) { this.val = val; this.next = next ?? nu
 
 def reverse_list(head):
     pass`,
+      java: `class ListNode {
+    int val;
+    ListNode next;
+    ListNode(int val) { this.val = val; }
+}
+
+class Solution {
+    public ListNode reverseList(ListNode head) {
+
+    }
+}`,
     },
     testCases: [
       { input: "[1,2,3,4,5]", expectedOutput: "[5,4,3,2,1]", description: "Five nodes" },
@@ -189,6 +215,11 @@ Output: 23
 }`,
       python: `def max_sub_array(nums: list[int]) -> int:
     pass`,
+      java: `class Solution {
+    public int maxSubArray(int[] nums) {
+
+    }
+}`,
     },
     testCases: [
       { input: "[-2,1,-3,4,-1,2,1,-5,4]", expectedOutput: "6", description: "Mixed negatives" },
@@ -233,6 +264,11 @@ Output: 3
 }`,
       python: `def num_islands(grid: list[list[str]]) -> int:
     pass`,
+      java: `class Solution {
+    public int numIslands(char[][] grid) {
+
+    }
+}`,
     },
     testCases: [
       {
@@ -275,6 +311,11 @@ Explanation: (1+1+1), (1+2), (2+1)
 }`,
       python: `def climb_stairs(n: int) -> int:
     pass`,
+      java: `class Solution {
+    public int climbStairs(int n) {
+
+    }
+}`,
     },
     testCases: [
       { input: "2", expectedOutput: "2" },
@@ -307,6 +348,11 @@ Output: [[1,5]]
 }`,
       python: `def merge(intervals: list[list[int]]) -> list[list[int]]:
     pass`,
+      java: `class Solution {
+    public int[][] merge(int[][] intervals) {
+
+    }
+}`,
     },
     testCases: [
       { input: "[[1,3],[2,6],[8,10],[15,18]]", expectedOutput: "[[1,6],[8,10],[15,18]]" },
@@ -357,6 +403,19 @@ Output: [null,null,null,1,null,-1,null,-1,3,4]
 
     def put(self, key: int, value: int) -> None:
         pass`,
+      java: `class LRUCache {
+    public LRUCache(int capacity) {
+
+    }
+
+    public int get(int key) {
+
+    }
+
+    public void put(int key, int value) {
+
+    }
+}`,
     },
     testCases: [
       {
@@ -398,6 +457,13 @@ Output: false
 }`,
       python: `def word_break(s: str, word_dict: list[str]) -> bool:
     pass`,
+      java: `import java.util.List;
+
+class Solution {
+    public boolean wordBreak(String s, List<String> wordDict) {
+
+    }
+}`,
     },
     testCases: [
       { input: '"leetcode", ["leet","code"]', expectedOutput: "true" },
