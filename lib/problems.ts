@@ -30,6 +30,9 @@ Output: [1,2]
       javascript: `function twoSum(nums, target) {
 
 }`,
+      typescript: `function twoSum(nums: number[], target: number): number[] {
+
+}`,
       python: `def two_sum(nums: list[int], target: int) -> list[int]:
     pass`,
       java: `class Solution {
@@ -77,6 +80,9 @@ Output: false
       javascript: `function isValid(s) {
 
 }`,
+      typescript: `function isValid(s: string): boolean {
+
+}`,
       python: `def is_valid(s: str) -> bool:
     pass`,
       java: `class Solution {
@@ -115,6 +121,9 @@ Output: -1
 \`\`\``,
     starterCode: {
       javascript: `function search(nums, target) {
+
+}`,
+      typescript: `function search(nums: number[], target: number): number {
 
 }`,
       python: `def search(nums: list[int], target: int) -> int:
@@ -157,6 +166,18 @@ class ListNode { constructor(val, next) { this.val = val; this.next = next ?? nu
 \`\`\``,
     starterCode: {
       javascript: `function reverseList(head) {
+
+}`,
+      typescript: `class ListNode {
+  val: number;
+  next: ListNode | null;
+  constructor(val: number, next?: ListNode | null) {
+    this.val = val;
+    this.next = next ?? null;
+  }
+}
+
+function reverseList(head: ListNode | null): ListNode | null {
 
 }`,
       python: `class ListNode:
@@ -213,6 +234,9 @@ Output: 23
       javascript: `function maxSubArray(nums) {
 
 }`,
+      typescript: `function maxSubArray(nums: number[]): number {
+
+}`,
       python: `def max_sub_array(nums: list[int]) -> int:
     pass`,
       java: `class Solution {
@@ -262,6 +286,9 @@ Output: 3
       javascript: `function numIslands(grid) {
 
 }`,
+      typescript: `function numIslands(grid: string[][]): number {
+
+}`,
       python: `def num_islands(grid: list[list[str]]) -> int:
     pass`,
       java: `class Solution {
@@ -309,6 +336,9 @@ Explanation: (1+1+1), (1+2), (2+1)
       javascript: `function climbStairs(n) {
 
 }`,
+      typescript: `function climbStairs(n: number): number {
+
+}`,
       python: `def climb_stairs(n: int) -> int:
     pass`,
       java: `class Solution {
@@ -344,6 +374,9 @@ Output: [[1,5]]
 \`\`\``,
     starterCode: {
       javascript: `function merge(intervals) {
+
+}`,
+      typescript: `function merge(intervals: number[][]): number[][] {
 
 }`,
       python: `def merge(intervals: list[list[int]]) -> list[list[int]]:
@@ -391,6 +424,19 @@ Output: [null,null,null,1,null,-1,null,-1,3,4]
   }
 
   put(key, value) {
+
+  }
+}`,
+      typescript: `class LRUCache {
+  constructor(capacity: number) {
+
+  }
+
+  get(key: number): number {
+
+  }
+
+  put(key: number, value: number): void {
 
   }
 }`,
@@ -453,6 +499,9 @@ Output: false
 \`\`\``,
     starterCode: {
       javascript: `function wordBreak(s, wordDict) {
+
+}`,
+      typescript: `function wordBreak(s: string, wordDict: string[]): boolean {
 
 }`,
       python: `def word_break(s: str, word_dict: list[str]) -> bool:

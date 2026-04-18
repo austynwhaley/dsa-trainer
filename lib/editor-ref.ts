@@ -88,10 +88,13 @@ export function animateCodeIntoEditor(
       text: "",
     }]);
 
-    // Type new content — track position by absolute offset to avoid cursor drift
+    // Type new content — track cursor by counting newlines in inserted text,
+    // not by Monaco byte offsets (which can drift if EOL sequences differ).
     const CHARS = 4;
     const MS = 16;
     let typed = 0;
+    let curLine = startPos.lineNumber;
+    let curCol = startPos.column;
 
     const interval = setInterval(() => {
       if (typed >= newMiddle.length) {
@@ -99,23 +102,27 @@ export function animateCodeIntoEditor(
         isAnimating = false;
         editor.updateOptions({ readOnly: false });
         editor.focus();
-        const finalPos = model.getPositionAt(prefixLen + newMiddle.length);
-        editor.setPosition(finalPos);
+        editor.setPosition({ lineNumber: curLine, column: curCol });
         onDone(model.getValue());
         return;
       }
 
       const chunk = newMiddle.slice(typed, typed + CHARS);
-      const insertPos = model.getPositionAt(prefixLen + typed);
       typed += chunk.length;
 
       model.applyEdits([{
-        range: new monaco.Range(insertPos.lineNumber, insertPos.column, insertPos.lineNumber, insertPos.column),
+        range: new monaco.Range(curLine, curCol, curLine, curCol),
         text: chunk,
       }]);
-      const newPos = model.getPositionAt(prefixLen + typed);
-      editor.setPosition(newPos);
-      editor.revealPosition(newPos);
+
+      // Advance position by counting newlines — immune to EOL normalization
+      for (let i = 0; i < chunk.length; i++) {
+        if (chunk[i] === "\n") { curLine++; curCol = 1; }
+        else if (chunk[i] !== "\r") { curCol++; }
+      }
+
+      editor.setPosition({ lineNumber: curLine, column: curCol });
+      editor.revealPosition({ lineNumber: curLine, column: curCol });
     }, MS);
   }, 180);
 }

@@ -209,7 +209,7 @@ export function CodeEditor() {
       worker.onmessage = (e) => { setRunResult(e.data); setIsRunning(false); worker.terminate(); };
       worker.onerror = (e) => { setRunResult({ results: [], stdout: "", error: e.message }); setIsRunning(false); worker.terminate(); };
       worker.postMessage({ code, testCases: problem.testCases, language });
-    } else if (language === "python" || language === "java") {
+    } else if (language === "python" || language === "typescript" || language === "java") {
       try {
         const res = await fetch("/api/run-code", {
           method: "POST",
@@ -283,7 +283,10 @@ export function CodeEditor() {
     window.addEventListener("mouseup", onUp);
   }
 
-  const monacoLanguage = language === "javascript" ? "javascript" : language === "java" ? "java" : "python";
+  const monacoLanguage =
+    language === "javascript" ? "javascript" :
+    language === "typescript" ? "typescript" :
+    language === "java" ? "java" : "python";
   const showAcceptReject = !!pendingEdit && !pendingEdit.isAnimating;
 
   return (
@@ -294,6 +297,10 @@ export function CodeEditor() {
           <button onClick={() => setLanguage("javascript")}
             className={`px-3 py-1 text-xs ${language === "javascript" ? "bg-neutral-700 text-white" : "text-neutral-400 hover:text-white"}`}>
             JavaScript
+          </button>
+          <button onClick={() => setLanguage("typescript")}
+            className={`px-3 py-1 text-xs ${language === "typescript" ? "bg-neutral-700 text-white" : "text-neutral-400 hover:text-white"}`}>
+            TypeScript
           </button>
           <button onClick={() => setLanguage("python")}
             className={`px-3 py-1 text-xs ${language === "python" ? "bg-neutral-700 text-white" : "text-neutral-400 hover:text-white"}`}>
