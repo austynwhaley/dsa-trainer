@@ -8,11 +8,13 @@ import type { TestCase, RunResult } from "@/lib/types";
 
 const execFileAsync = promisify(execFile);
 
-// Reuse the same harness logic as the JS worker but server-side via Node
-function buildNodeHarness(jsCode: string, testCases: TestCase[]): string {
+function buildNodeHarness(jsCode: string, testCases: TestCase[], entryPoint: string): string {
   const casesJson = JSON.stringify(
     testCases.map((tc) => ({ input: tc.input, expected: tc.expectedOutput }))
   );
+  const ep = JSON.stringify(entryPoint);
+  const isLinkedList = entryPoint === "reverseList";
+  const isLRU = entryPoint === "LRUCache";
 
   return `
 const stdoutLines = [];
@@ -23,35 +25,30 @@ class ListNode {
   constructor(val, next) { this.val = val ?? 0; this.next = next ?? null; }
 }
 
-function arrayToList(arr) {
+${jsCode}
+
+const _ep = ${ep};
+let _fn;
+try { _fn = eval(_ep); } catch (_) { _fn = undefined; }
+if (typeof _fn === "undefined") {
+  _origLog(JSON.stringify({ results: ${JSON.stringify(testCases)}.map(tc => ({
+    passed: false, input: tc.input, expectedOutput: tc.expectedOutput, actualOutput: "",
+    error: \`Expected function or class '\${_ep}' was not defined in your code\`,
+  })) }));
+  process.exit(0);
+}
+
+const _cases = ${casesJson};
+const _results = [];
+const _isLinkedList = ${isLinkedList};
+const _isLRU = ${isLRU};
+
+function _arrayToList(arr) {
   if (!arr || !arr.length) return null;
   let head = null;
   for (let i = arr.length - 1; i >= 0; i--) head = new ListNode(arr[i], head);
   return head;
 }
-
-function listToArray(node) {
-  const r = [];
-  while (node) { r.push(node.val); node = node.next; }
-  return r;
-}
-
-${jsCode}
-
-const _cases = ${casesJson};
-const _results = [];
-
-const _fn = typeof twoSum !== "undefined" ? twoSum
-  : typeof isValid !== "undefined" ? isValid
-  : typeof search !== "undefined" ? search
-  : typeof reverseList !== "undefined" ? reverseList
-  : typeof maxSubArray !== "undefined" ? maxSubArray
-  : typeof numIslands !== "undefined" ? numIslands
-  : typeof climbStairs !== "undefined" ? climbStairs
-  : typeof merge !== "undefined" ? merge
-  : typeof wordBreak !== "undefined" ? wordBreak
-  : typeof LRUCache !== "undefined" ? LRUCache
-  : null;
 
 for (const tc of _cases) {
   stdoutLines.length = 0;
@@ -61,7 +58,7 @@ for (const tc of _cases) {
     try { args = JSON.parse("[" + tc.input + "]"); } catch { args = [tc.input]; }
 
     let actual;
-    if (_fn && _fn.toString().startsWith("class LRU")) {
+    if (_isLRU) {
       const cache = new _fn(args[0]);
       const ops = args[1] ?? [];
       const opResults = [null];
@@ -71,11 +68,13 @@ for (const tc of _cases) {
       }
       actual = opResults;
     } else {
-      // convert int array → ListNode if function expects it
-      if (_fn === reverseList) args = args.map(a => Array.isArray(a) ? arrayToList(a) : a);
+      if (_isLinkedList) args = args.map(a => Array.isArray(a) ? _arrayToList(a) : a);
       actual = _fn(...args);
       if (actual !== null && typeof actual === "object" && "val" in actual && "next" in actual) {
-        actual = listToArray(actual);
+        const arr = [];
+        let cur = actual;
+        while (cur) { arr.push(cur.val); cur = cur.next; }
+        actual = arr;
       }
     }
 
@@ -92,7 +91,7 @@ _origLog(JSON.stringify({ results: _results }));
 `;
 }
 
-export async function runTypeScript(code: string, testCases: TestCase[]): Promise<RunResult> {
+export async function runTypeScript(code: string, testCases: TestCase[], entryPoint = ""): Promise<RunResult> {
   const dir = join(tmpdir(), `ts_run_${randomUUID()}`);
   await mkdir(dir, { recursive: true });
 
@@ -128,7 +127,7 @@ export async function runTypeScript(code: string, testCases: TestCase[]): Promis
     }
 
     const harnessFile = join(dir, "runner.js");
-    await writeFile(harnessFile, buildNodeHarness(outputText, testCases), "utf8");
+    await writeFile(harnessFile, buildNodeHarness(outputText, testCases, entryPoint), "utf8");
 
     const { stdout } = await execFileAsync("node", [harnessFile], { timeout: 10000 });
     const parsed = JSON.parse(stdout.trim()) as { results: typeof testCases extends infer T ? T : never[] };

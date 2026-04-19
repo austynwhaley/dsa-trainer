@@ -1,5 +1,19 @@
 import type { Problem } from "./types";
 
+// ---- Benchmark input helpers ----
+const ri = (lo: number, hi: number) => Math.floor(Math.random() * (hi - lo + 1)) + lo;
+const ra = (n: number, lo = -1000, hi = 1000) => Array.from({ length: n }, () => ri(lo, hi));
+const sortedRa = (n: number) => { const a = ra(n, -n, n); a.sort((x, y) => x - y); return a; };
+const randGrid = (side: number): string[][] =>
+  Array.from({ length: side }, () =>
+    Array.from({ length: side }, () => (Math.random() > 0.65 ? "1" : "0")));
+const randIntervals = (n: number): number[][] => {
+  const out: number[][] = [];
+  for (let i = 0; i < n; i++) { const a = ri(0, n * 3); out.push([a, a + ri(1, 20)]); }
+  return out.sort((a, b) => a[0] - b[0]);
+};
+const WORD_DICT = ["a", "ab", "abc", "b", "bc", "c", "aa", "aab", "ba", "ca"];
+
 export const PROBLEMS: Problem[] = [
   {
     id: "two-sum",
@@ -46,6 +60,8 @@ Output: [1,2]
       { input: "[3,2,4], 6", expectedOutput: "[1,2]", description: "Non-adjacent pair" },
       { input: "[3,3], 6", expectedOutput: "[0,1]", description: "Duplicate values" },
     ],
+    entryPoint: "twoSum",
+    generateInput: (n) => [ra(n), ri(-2000, 2000)],
   },
   {
     id: "valid-parentheses",
@@ -98,6 +114,13 @@ Output: false
       { input: '"([)]"', expectedOutput: "false", description: "Wrong order" },
       { input: '"{[]}"', expectedOutput: "true", description: "Nested" },
     ],
+    entryPoint: "isValid",
+    generateInput: (n) => {
+      const pairs = ["()", "[]", "{}"];
+      let s = "";
+      for (let i = 0; i < n; i++) s += pairs[ri(0, 2)][ri(0, 1)];
+      return [s];
+    },
   },
   {
     id: "binary-search",
@@ -140,6 +163,8 @@ Output: -1
       { input: "[5], 5", expectedOutput: "0", description: "Single element, found" },
       { input: "[5], 3", expectedOutput: "-1", description: "Single element, not found" },
     ],
+    entryPoint: "search",
+    generateInput: (n) => [sortedRa(n), ri(-n, n)],
   },
   {
     id: "reverse-linked-list",
@@ -204,6 +229,8 @@ class Solution {
       { input: "[1,2]", expectedOutput: "[2,1]", description: "Two nodes" },
       { input: "[]", expectedOutput: "[]", description: "Empty list" },
     ],
+    entryPoint: "reverseList",
+    generateInput: (n) => [Array.from({ length: n }, (_, i) => i + 1)],
   },
   {
     id: "maximum-subarray",
@@ -251,6 +278,8 @@ Output: 23
       { input: "[5,4,-1,7,8]", expectedOutput: "23", description: "Mostly positive" },
       { input: "[-1,-2,-3]", expectedOutput: "-1", description: "All negative" },
     ],
+    entryPoint: "maxSubArray",
+    generateInput: (n) => [ra(n, -100, 100)],
   },
   {
     id: "number-of-islands",
@@ -309,6 +338,8 @@ Output: 3
         description: "Three islands",
       },
     ],
+    entryPoint: "numIslands",
+    generateInput: (n) => [randGrid(Math.max(2, Math.round(Math.sqrt(n))))],
   },
   {
     id: "climbing-stairs",
@@ -353,6 +384,8 @@ Explanation: (1+1+1), (1+2), (2+1)
       { input: "10", expectedOutput: "89" },
       { input: "1", expectedOutput: "1" },
     ],
+    entryPoint: "climbStairs",
+    generateInput: (n) => [n],
   },
   {
     id: "merge-intervals",
@@ -392,6 +425,8 @@ Output: [[1,5]]
       { input: "[[1,4],[4,5]]", expectedOutput: "[[1,5]]" },
       { input: "[[1,4],[0,4]]", expectedOutput: "[[0,4]]" },
     ],
+    entryPoint: "merge",
+    generateInput: (n) => [randIntervals(n)],
   },
   {
     id: "lru-cache",
@@ -470,6 +505,16 @@ Output: [null,null,null,1,null,-1,null,-1,3,4]
         description: "Standard LRU operations",
       },
     ],
+    entryPoint: "LRUCache",
+    generateInput: (n) => {
+      const cap = Math.max(1, Math.floor(n / 3));
+      const ops: [string, ...number[]][] = Array.from({ length: n }, () =>
+        Math.random() > 0.4
+          ? ["put", ri(0, cap - 1), ri(0, 999)]
+          : ["get", ri(0, cap - 1)]
+      );
+      return [cap, ops];
+    },
   },
   {
     id: "word-break",
@@ -519,6 +564,12 @@ class Solution {
       { input: '"applepenapple", ["apple","pen"]', expectedOutput: "true" },
       { input: '"catsandog", ["cats","dog","sand","and","cat"]', expectedOutput: "false" },
     ],
+    entryPoint: "wordBreak",
+    generateInput: (n) => {
+      let s = "";
+      while (s.length < n) s += WORD_DICT[ri(0, WORD_DICT.length - 1)];
+      return [s.slice(0, n), WORD_DICT];
+    },
   },
 ];
 

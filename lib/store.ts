@@ -9,6 +9,8 @@ import type {
   GhostComment,
   RunResult,
   PendingEdit,
+  ComplexityEstimate,
+  BenchmarkResult,
 } from "./types";
 import { PROBLEMS } from "./problems";
 
@@ -65,6 +67,20 @@ interface AppState {
   // Offer-to-write button shown in chat after an explanation
   pendingOffer: { label: string } | null;
   setPendingOffer: (o: { label: string } | null) => void;
+
+  // Complexity estimate (AI-analyzed, debounced)
+  complexity: ComplexityEstimate | null;
+  complexityLoading: boolean;
+  setComplexity: (c: ComplexityEstimate | null) => void;
+  setComplexityLoading: (v: boolean) => void;
+
+  // Benchmark
+  benchmarkResult: BenchmarkResult | null;
+  benchmarkRunning: boolean;
+  showBenchmark: boolean;
+  setBenchmarkResult: (r: BenchmarkResult | null) => void;
+  setBenchmarkRunning: (v: boolean) => void;
+  setShowBenchmark: (v: boolean) => void;
 }
 
 export const useStore = create<AppState>((set) => ({
@@ -72,7 +88,7 @@ export const useStore = create<AppState>((set) => ({
   setProblem: (p) =>
     set((s) => ({
       problem: p,
-      code: p.starterCode[s.language],
+      code: p.starterCode[s.language] ?? "",
       editHistory: [],
       ghostComments: [],
       lastRunResult: null,
@@ -83,7 +99,7 @@ export const useStore = create<AppState>((set) => ({
   setLanguage: (l) =>
     set((s) => ({
       language: l,
-      code: s.problem.starterCode[l],
+      code: s.problem.starterCode[l] ?? "",
       editHistory: [],
       ghostComments: [],
       lastActivityAt: Date.now(),
@@ -168,4 +184,16 @@ export const useStore = create<AppState>((set) => ({
 
   pendingOffer: null,
   setPendingOffer: (o) => set({ pendingOffer: o }),
+
+  complexity: null,
+  complexityLoading: false,
+  setComplexity: (c) => set({ complexity: c }),
+  setComplexityLoading: (v) => set({ complexityLoading: v }),
+
+  benchmarkResult: null,
+  benchmarkRunning: false,
+  showBenchmark: false,
+  setBenchmarkResult: (r) => set({ benchmarkResult: r }),
+  setBenchmarkRunning: (v) => set({ benchmarkRunning: v }),
+  setShowBenchmark: (v) => set({ showBenchmark: v }),
 }));

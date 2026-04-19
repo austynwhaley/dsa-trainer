@@ -14,6 +14,8 @@ export interface Problem {
   description: string;
   starterCode: Record<Language, string>;
   testCases: TestCase[];
+  entryPoint?: string;      // function/class name runners invoke (e.g. "twoSum", "LRUCache")
+  generateInput?: (n: number) => unknown[]; // returns arg array for benchmark at size n
   hints?: string[];
 }
 
@@ -56,6 +58,25 @@ export interface PendingEdit {
   originalCode: string; // code before AI started writing
   finalCode: string;    // code AI intends to produce
   isAnimating: boolean; // still typing?
+}
+
+export interface ComplexityEstimate {
+  time: string;        // "O(n²)", "O(n log n)", "O(?)"
+  space: string;
+  timeReason: string;  // one-sentence explanation
+  spaceReason: string;
+}
+
+export interface BenchmarkPoint {
+  n: number;
+  medianMs: number;
+  aborted?: boolean;
+  error?: string;
+}
+
+export interface BenchmarkResult {
+  points: BenchmarkPoint[];
+  measuredClass: string;  // "O(n)", "O(n²)", etc.
 }
 
 export interface AIContext {

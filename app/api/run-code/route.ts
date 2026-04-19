@@ -8,10 +8,11 @@ export const runtime = "nodejs";
 // For v1: simple Python runner via child_process, sandboxed with a timeout.
 
 export async function POST(req: Request) {
-  const { code, testCases, language } = await req.json() as {
+  const { code, testCases, language, entryPoint } = await req.json() as {
     code: string;
     testCases: TestCase[];
     language: "python" | "typescript" | "java";
+    entryPoint?: string;
   };
 
   if (language === "python") {
@@ -22,7 +23,7 @@ export async function POST(req: Request) {
 
   if (language === "typescript") {
     const { runTypeScript } = await import("./typescript-runner");
-    const result: RunResult = await runTypeScript(code, testCases);
+    const result: RunResult = await runTypeScript(code, testCases, entryPoint);
     return NextResponse.json(result);
   }
 

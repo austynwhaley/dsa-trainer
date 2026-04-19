@@ -9,6 +9,8 @@ import { setEditorInstance, isAnimating } from "@/lib/editor-ref";
 import { setEditorAndMonaco } from "@/lib/editor-actions";
 import type { AIContext } from "@/lib/types";
 import { TestResults } from "./TestResults";
+import { ComplexityBadge } from "./ComplexityBadge";
+import { BenchmarkPanel } from "./BenchmarkPanel";
 
 const GHOST_DEBOUNCE_MS = 4000;
 const GHOST_MIN_CODE_LENGTH = 20;
@@ -51,6 +53,7 @@ export function CodeEditor() {
     lastRunResult, setRunResult, isRunning, setIsRunning,
     chatMessages,
     pendingEdit, acceptPendingEdit, rejectPendingEdit, finishPendingAnimation,
+    showBenchmark, setShowBenchmark, benchmarkRunning,
   } = useStore();
 
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null);
@@ -208,13 +211,13 @@ export function CodeEditor() {
       const worker = new Worker("/workers/js-runner.js");
       worker.onmessage = (e) => { setRunResult(e.data); setIsRunning(false); worker.terminate(); };
       worker.onerror = (e) => { setRunResult({ results: [], stdout: "", error: e.message }); setIsRunning(false); worker.terminate(); };
-      worker.postMessage({ code, testCases: problem.testCases, language });
+      worker.postMessage({ code, testCases: problem.testCases, language, entryPoint: problem.entryPoint });
     } else if (language === "python" || language === "typescript" || language === "java") {
       try {
         const res = await fetch("/api/run-code", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code, testCases: problem.testCases, language }),
+          body: JSON.stringify({ code, testCases: problem.testCases, language, entryPoint: problem.entryPoint }),
         });
         setRunResult(await res.json());
       } catch (err: unknown) {
@@ -312,6 +315,17 @@ export function CodeEditor() {
           </button>
         </div>
         <div className="flex-1" />
+        <ComplexityBadge />
+        <button
+          onClick={() => setShowBenchmark(!showBenchmark)}
+          className={`px-3 py-1 rounded text-xs font-medium border transition-colors ${
+            showBenchmark || benchmarkRunning
+              ? "bg-indigo-900/60 border-indigo-700 text-indigo-300"
+              : "border-neutral-700 text-neutral-400 hover:text-white hover:border-neutral-500"
+          }`}
+        >
+          Benchmark
+        </button>
         <button onClick={runCode} disabled={isRunning || !!pendingEdit}
           className="flex items-center gap-1.5 px-3 py-1 bg-green-700 hover:bg-green-600 disabled:opacity-40 rounded text-xs font-medium text-white">
           <svg className="w-3 h-3" viewBox="0 0 16 16" fill="currentColor"><path d="M3 2l10 6-10 6V2z" /></svg>
@@ -375,8 +389,19 @@ export function CodeEditor() {
         />
       </div>
 
+      {/* Benchmark panel */}
+      {(showBenchmark || benchmarkRunning) && (
+        <>
+          <div onMouseDown={onResultsDragStart}
+            className="h-1 shrink-0 cursor-row-resize bg-neutral-800 hover:bg-indigo-500/60 active:bg-indigo-500 transition-colors" />
+          <div style={{ height: resultsHeight }} className="shrink-0">
+            <BenchmarkPanel onClose={() => setShowBenchmark(false)} />
+          </div>
+        </>
+      )}
+
       {/* Test results */}
-      {(lastRunResult || isRunning) && (
+      {!showBenchmark && !benchmarkRunning && (lastRunResult || isRunning) && (
         <>
           <div onMouseDown={onResultsDragStart}
             className="h-1 shrink-0 cursor-row-resize bg-neutral-800 hover:bg-blue-500/60 active:bg-blue-500 transition-colors" />
